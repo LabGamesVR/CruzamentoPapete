@@ -1,0 +1,2 @@
+Crie uma layer chamada calib. Mude todo o prefab "Calibration Object" e a Culling Mask da camera dentro dele para para ela.
+Mova a pasta "StreamingAssets" da pasta "Papete" para Assets
