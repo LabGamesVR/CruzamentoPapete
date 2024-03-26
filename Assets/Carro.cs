@@ -22,6 +22,7 @@ public class Carro : MonoBehaviour
     }
     public void Seguir(Vector3 posInicial)
     {
+        transform.parent = null;
         StartCoroutine(SeguirCoroutine(posInicial));
     }
 

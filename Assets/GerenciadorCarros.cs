@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GerenciadorCarros : MonoBehaviour
 {
+    public int minCarrosPorJogo = 20;
     static readonly float distanciaDeSpawn = 10f;
     static readonly float distanciaEntreCarros = 2f;
     static readonly float carroSpeed = 10f;
@@ -14,7 +15,7 @@ public class GerenciadorCarros : MonoBehaviour
 
     public bool auto = true;
 
-    readonly Queue<int> filaDePrioridade = new();
+    Queue<int> filaDePrioridade = new();
     Queue<Carro>[] filas = { new(), new(), new(), new() };
 
     public int prioridade = -1;
@@ -23,37 +24,59 @@ public class GerenciadorCarros : MonoBehaviour
 
     Transform[] carrosHolders = new Transform[4];
 
-    public void Direcionar(int dir)
+    Relatorio relatorio;
+
+    public void Direcionar(int dir, bool imediato = false)
     {
-        print(dir);
-        if(dir == prioridade && filas[dir].Count>0)
+        if(!auto)
+            relatorio.RegistrarMovimento(dir);
+        if((dir == prioridade||imediato) && filas[dir].Count>0)
         {
             Carro carro  = filas[dir].Dequeue();
             carro.Seguir(carrosHolders[dir].TransformPoint(posDePrioridade));
 
             prioridade = -1;
-            Invoke("LiberarProximaPrioridade", 0.5f);
+            if (imediato)
+                LiberarProximaPrioridade();
+            else
+                Invoke("LiberarProximaPrioridade", 0.5f);
         }
     }
 
     public void IniciarJogo()
     {
         auto = false;
-        for (int i = filas[0].Count + filas[1].Count + filas[2].Count + filas[3].Count; i < 20; i++)
+
+        filaDePrioridade = new();
+        for(int i = 0; i < 4; i++)
+        {
+            for (int j = carrosHolders[i].childCount-1; j >= 0; j--)
+            {
+                carrosHolders[i].GetChild(j).GetComponent<Carro>().Seguir(carrosHolders[i].TransformPoint(posDePrioridade));
+            }
+            filas[i] = new();
+        }
+
+        CancelInvoke("LiberarProximaPrioridade");
+
+        relatorio.Zerar();
+        for (int i = 0; i < minCarrosPorJogo; i++)
         {
             int dir = Random.Range(0, 4);
             novoCarroNaFila(dir);
-            filaDePrioridade.Enqueue(dir);
         }
+        Invoke("LiberarProximaPrioridade", 2f);
     }
 
     void novoCarroNaFila(int dir) {
         Carro novoCarro = Instantiate(carroPrefab, carrosHolders[dir]).GetComponent<Carro>();
         novoCarro.transform.localPosition = posDeEspera + new Vector3(0f, 0f, distanciaDeSpawn + filas[dir].Count*distanciaEntreCarros);
         filas[dir].Enqueue(novoCarro);
+        filaDePrioridade.Enqueue(dir);
     }
     void Start()
     {
+        relatorio = GetComponent<Relatorio>();
         for (int i = 0; i < 4; i++)
         {
             carrosHolders[i] = new GameObject(i.ToString()).transform;
@@ -66,7 +89,12 @@ public class GerenciadorCarros : MonoBehaviour
     void LiberarProximaPrioridade()
     {
         if (filaDePrioridade.Count > 0)
+        {
             prioridade = filaDePrioridade.Dequeue();
+            if(!auto)
+                relatorio.RegistrarMovimentoExercicio(prioridade);
+
+        }
         else
             prioridade = -1;
     }
@@ -76,11 +104,10 @@ public class GerenciadorCarros : MonoBehaviour
     {
         if (auto)
         {
-            if (filas[0].Count + filas[1].Count + filas[2].Count + filas[3].Count < 10)
+            if (filas[0].Count + filas[1].Count + filas[2].Count + filas[3].Count < 5)
             {
                 int dir = Random.Range(0, 4);
                 novoCarroNaFila(dir);
-                filaDePrioridade.Enqueue(dir);
             }
         }
         else
