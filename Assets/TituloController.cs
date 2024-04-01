@@ -7,11 +7,12 @@ public class TituloController : MonoBehaviour
 {
     private Animator animator;
     private Relatorio relatorio;
-    public TMP_InputField nomeJogadorInputField;
+    private InputJogador nomeJogadorInputField;
     private void Start()
     {
         animator = GetComponent<Animator>();
         relatorio = FindObjectOfType<Relatorio>();
+        nomeJogadorInputField = FindObjectOfType<InputJogador>();
     }
 
     public void IniciarJogo()
@@ -27,6 +28,17 @@ public class TituloController : MonoBehaviour
     public void VoltarAoMenu()
     {
         animator.Play("FadeIn");
-        relatorio.ExibirGrafico(nomeJogadorInputField.text);
+        relatorio.ExibirGrafico(nomeJogadorInputField.valor());
+    }
+
+    public void MostrarTutorial()
+    {
+        Tutorial[] t = Resources.FindObjectsOfTypeAll<Tutorial>();
+        foreach (Tutorial t2 in t)
+        {
+            print(t2);
+            t2.gameObject.SetActive(true);
+
+        }
     }
 }

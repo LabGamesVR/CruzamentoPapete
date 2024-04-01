@@ -12,7 +12,7 @@ public class Jogador : MonoBehaviour
 
     Animator animator;
     private GerenciadorCarros gerenciadorCarros;
-    private Papete papete;
+    public Papete papete;
     
     private Papete.Movimento ultimaPos= Papete.Movimento.Repouso;
     private Papete.Movimento posAtual = Papete.Movimento.Repouso;

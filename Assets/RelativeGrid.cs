@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -24,15 +25,15 @@ public class RelativeGrid : MonoBehaviour
         {
             if(item != rt)
             {
-                item.sizeDelta = rt.sizeDelta.Abs() * cellSize;
+                item.sizeDelta = rt.sizeDelta.Abs() * new Vector2(1f,2f)*cellSize;
+                item.anchoredPosition = ocup * tamaho;
+                
                 ocup.x += cellSize.x;
-                if(ocup.x > 1f)
+                if(ocup.x >= 1f)
                 {
                     ocup.x = 0f;
-                    ocup.y += cellSize.y;
+                    ocup.y -= cellSize.y;
                 }
-                item.anchoredPosition = ocup * tamaho - tamaho*0.5f;
-
             }
         }
     }

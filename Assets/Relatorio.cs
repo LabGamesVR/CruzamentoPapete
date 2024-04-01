@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -47,6 +48,22 @@ public class Relatorio: MonoBehaviour
         return ((binary & 0x7F800000) == 0x7F800000) && ((binary & 0x007FFFFF) != 0);
     }
 
+    public static string getFolderRelatorio()
+    {
+        string folderPath = Application.persistentDataPath + "/relatorios";
+
+        //remove barras erradas que o windows insiste em usar
+        folderPath = folderPath.Replace('\\', '/');
+
+        //garante que a pasta exista
+        System.IO.Directory.CreateDirectory(folderPath);
+        return folderPath;
+    }
+    public void AbrirPastaRelatorios()
+    {
+        Application.OpenURL("file:///" + getFolderRelatorio());
+    }
+
     public void ExibirGrafico(string jogador)
     {
         if (momentosLinhaDoTempoExercicio.Count > 0 && momentosLinhaDoTempoPapete.Count > 0)
@@ -68,12 +85,29 @@ public class Relatorio: MonoBehaviour
             print("Média do delay: " + mediaDelay);
             print("DP do delay: " + desvioPadraoDelay);
 
+            if (jogador != "")
+            {
+                string filePath = getFolderRelatorio() + '/' + jogador + ".csv";
 
+                #if PLATFORM_STANDALONE_WIN || UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+                    filePath = filePath.Replace('/', '\\');
+                #endif
+
+                if (!System.IO.File.Exists(filePath))
+                    System.IO.File.WriteAllText(filePath, "data,delay médio,desvio-padrão");
+                
+                DateTime d = DateTime.Now;
+                string linha = 
+                    "\n" + d.Year + '-' + d.Month + '-' + d.Day + "," +
+                    mediaDelay.ToString(System.Globalization.CultureInfo.InvariantCulture) + ',' +
+                    desvioPadraoDelay.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                print(linha);
+                System.IO.File.AppendAllText(filePath, linha );
+            }
 
 
             float primeiroMomento = Mathf.Min(momentosLinhaDoTempoPapete[0], momentosLinhaDoTempoExercicio[0]);
             float ultimoMomento = Mathf.Max(momentosLinhaDoTempoPapete[^1], momentosLinhaDoTempoExercicio[^1]);
-            print(primeiroMomento + " - " + ultimoMomento);
             
             float larguraBase = corpoGrafico.rect.width - pontoGraficoPrefab.GetComponent<RectTransform>().rect.width;
             float alturaBase = corpoGrafico.rect.height- pontoGraficoPrefab.GetComponent<RectTransform>().rect.height;
@@ -163,17 +197,21 @@ public class Relatorio: MonoBehaviour
         }
     }
 
+    public void OcultarGrafico()
+    {
+        UIparent.SetActive(false);
+    }
     private void Start()
     {
         for (int i = 0; i < 10; i++)
         {
-            momentosLinhaDoTempoExercicio.Add(Random.Range(0f, 100f));
-            momentosLinhaDoTempoPapete.Add(Random.Range(0f, 100f));
+            momentosLinhaDoTempoExercicio.Add(UnityEngine.Random.Range(0f, 100f));
+            momentosLinhaDoTempoPapete.Add(UnityEngine.Random.Range(0f, 100f));
             momentosLinhaDoTempoPapete.Sort();
             momentosLinhaDoTempoExercicio.Sort();
 
-            posicoesExercicio.Add(Random.Range(0, 4));
-            posicoesPapete.Add(Random.Range(0, 4));
+            posicoesExercicio.Add(UnityEngine.Random.Range(0, 4));
+            posicoesPapete.Add(UnityEngine.Random.Range(0, 4));
         }
 
     }
