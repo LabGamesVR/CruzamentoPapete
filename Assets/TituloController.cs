@@ -28,7 +28,7 @@ public class TituloController : MonoBehaviour
     public void VoltarAoMenu()
     {
         animator.Play("FadeIn");
-        relatorio.ExibirGrafico(nomeJogadorInputField.valor());
+        relatorio.ProduzirRelatorio(nomeJogadorInputField.valor());
     }
 
     public void MostrarTutorial()
@@ -36,9 +36,7 @@ public class TituloController : MonoBehaviour
         Tutorial[] t = Resources.FindObjectsOfTypeAll<Tutorial>();
         foreach (Tutorial t2 in t)
         {
-            print(t2);
             t2.gameObject.SetActive(true);
-
         }
     }
 }

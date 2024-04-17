@@ -25,7 +25,7 @@ public class RelativeGrid : MonoBehaviour
         {
             if(item != rt)
             {
-                item.sizeDelta = rt.sizeDelta.Abs() * new Vector2(1f,2f)*cellSize;
+                item.sizeDelta =  new Vector2(Mathf.Abs(rt.sizeDelta.x),Mathf.Abs(rt.sizeDelta.y)) *cellSize;
                 item.anchoredPosition = ocup * tamaho;
                 
                 ocup.x += cellSize.x;

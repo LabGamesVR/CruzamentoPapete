@@ -28,7 +28,6 @@ public class Jogador : MonoBehaviour
         animator = GetComponent<Animator>();   
         gerenciadorCarros = FindObjectOfType<GerenciadorCarros>();
         papete = new();
-        papete.ModoConexaoImediata(true);
     }
 
     void rodarPara(int dir)
@@ -39,7 +38,8 @@ public class Jogador : MonoBehaviour
     }
     void Update()
     {
-        if(gerenciadorCarros.auto)
+        papete.ModoConexaoImediata(true);
+        if (gerenciadorCarros.auto)
         {
             if(gerenciadorCarros.prioridade!=ultimaPrioridade)
             {

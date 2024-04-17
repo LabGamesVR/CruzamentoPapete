@@ -14,18 +14,30 @@ public class InputJogador : MonoBehaviour
         textField = GetComponentInChildren<TMPro.TMP_InputField>();
         dropdown = GetComponent<TMPro.TMP_Dropdown>();
         dropdown.onValueChanged.AddListener(OnDropdownChange);
+        RefreshDropdown();
+    }
 
-        dropdown.options.Clear();
-        dropdown.options.Add(new TMP_Dropdown.OptionData(""));
-        foreach (var item in System.IO.Directory.GetFiles(Relatorio.getFolderRelatorio()))
+    private void Awake()
+    {
+        RefreshDropdown();
+    }
+    private void RefreshDropdown()
+    {
+        if(dropdown != null)
         {
-            string[] partesAddr = item.Replace('\\','/').Split('/');
-            string nome = partesAddr[partesAddr.Length - 1].Split('.')[0];
-            
-            dropdown.options.Add(new TMP_Dropdown.OptionData(nome));
+            dropdown.options.Clear();
+            dropdown.options.Add(new TMP_Dropdown.OptionData(""));
+            foreach (var item in System.IO.Directory.GetFiles(Relatorio.getFolderRelatorio()))
+            {
+                string[] partesAddr = item.Replace('\\', '/').Split('/');
+                string nome = partesAddr[partesAddr.Length - 1].Split('.')[0];
+
+                dropdown.options.Add(new TMP_Dropdown.OptionData(nome));
+            }
+            if (dropdown.value < 0)
+                dropdown.value = 0;
+            dropdown.RefreshShownValue();
         }
-        dropdown.value = 0;
-        dropdown.RefreshShownValue();
     }
 
     private void OnDropdownChange(int index)
