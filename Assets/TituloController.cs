@@ -2,33 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class TituloController : MonoBehaviour
 {
     private Animator animator;
-    private Relatorio relatorio;
-    private InputJogador nomeJogadorInputField;
+    public Button botaoInicio;
     private void Start()
     {
         animator = GetComponent<Animator>();
-        relatorio = FindObjectOfType<Relatorio>();
-        nomeJogadorInputField = FindObjectOfType<InputJogador>();
+        botaoInicio.onClick.AddListener(IniciarJogo);
     }
 
     public void IniciarJogo()
     {
-        GerenciadorCarros gerenciador = FindObjectOfType<GerenciadorCarros>();
-        if (gerenciador.auto)
-        {
-            animator.Play("FadeOut");
-            gerenciador.IniciarJogo();
-        }
+        GameManager gm = FindObjectOfType<GameManager>();
+        gm.IniciarExercicio();
+        animator.Play("FadeOut");
     }
 
     public void VoltarAoMenu()
     {
         animator.Play("FadeIn");
-        relatorio.ProduzirRelatorio(nomeJogadorInputField.valor());
+    }
+    public void LiberarControleInicio(){
+        botaoInicio.interactable = true;
     }
 
     public void MostrarTutorial()

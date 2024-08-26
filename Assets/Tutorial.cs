@@ -9,10 +9,8 @@ public class Tutorial : MonoBehaviour
     public Texture[] spritesEvInv;
     public bool peEsq = false;
     private bool lastPeEsq = false;
-    Papete papete;
     private void Start()
     {
-        papete = FindObjectOfType<Jogador>().papete;
     }
     public void fechar()
     {
@@ -20,22 +18,22 @@ public class Tutorial : MonoBehaviour
     }
     private void Update()
     {
-        if (papete==null)
-        {
-            papete = FindObjectOfType<Jogador>().papete;
-        }
-        else
-        {
-            peEsq = papete.EhPeEsq();
-            if (peEsq != lastPeEsq)
-            {
-                lastPeEsq = peEsq;
-                foreach(RawImage img in pes)
-                    img.transform.localScale = new Vector3(peEsq ? -1f:1f, 1f, 1f) ;
+        // if (papete==null)
+        // {
+        //     papete = FindObjectOfType<Jogador>().papete;
+        // }
+        // else
+        // {
+        //     peEsq = papete.EhPeEsq();
+        //     if (peEsq != lastPeEsq)
+        //     {
+        //         lastPeEsq = peEsq;
+        //         foreach(RawImage img in pes)
+        //             img.transform.localScale = new Vector3(peEsq ? -1f:1f, 1f, 1f) ;
 
-                pes[1].texture = spritesEvInv[peEsq?0:1];
-                pes[3].texture = spritesEvInv[peEsq?1:0];
-            }
-        }
+        //         pes[1].texture = spritesEvInv[peEsq?0:1];
+        //         pes[3].texture = spritesEvInv[peEsq?1:0];
+        //     }
+        // }
     }
 }
