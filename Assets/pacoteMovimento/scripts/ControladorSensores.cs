@@ -8,12 +8,12 @@ public class ControladorSensores : MonoBehaviour
 {
     public bool disponivel;
     public Vector2 dados;
-    private Vector2 thread_save_dado;
+    private Vector2 thread_safe_dado;
     Mutex mutex = new Mutex();
     public MostradorStatusConexao mostrador;
     private string ultimoDispositivo;
-    private Thread buscarDadosThread;
-    private bool buscarDadosRunning = true;
+    private Thread buscarDadosSerialThread;
+    private bool buscarDadosSerialRunning = true;
 
     private StatusConexao novoStatus = StatusConexao.Desconectado;
     private StatusConexao statusConexao = StatusConexao.Desconectado;
@@ -24,8 +24,8 @@ public class ControladorSensores : MonoBehaviour
             Destroy(gameObject);
         else{
             DontDestroyOnLoad(gameObject);
-            buscarDadosThread = new Thread(BuscarDadosPorta);
-            buscarDadosThread.Start();
+            buscarDadosSerialThread = new Thread(BuscarDadosPorta);
+            buscarDadosSerialThread.Start();
         }
     }
 
@@ -35,7 +35,7 @@ public class ControladorSensores : MonoBehaviour
             mostrador.Mostrar(statusConexao);
         }
             mutex.WaitOne();
-            dados = thread_save_dado;  
+            dados = thread_safe_dado;  
             mutex.ReleaseMutex();
     }
     private static bool IsValidArduinoResponse(string response)
@@ -46,7 +46,7 @@ public class ControladorSensores : MonoBehaviour
 
     private SerialPort BuscarArduino()
     {
-        while (buscarDadosRunning)
+        while (buscarDadosSerialRunning)
         {
             bool erro = false;
             SerialPort newSerialPort = null;
@@ -93,7 +93,7 @@ public class ControladorSensores : MonoBehaviour
     private void BuscarDadosPorta()
     {
         SerialPort serialPort = null;
-        while (buscarDadosRunning)
+        while (buscarDadosSerialRunning)
         {
             if (serialPort == null)
             {
@@ -135,7 +135,7 @@ public class ControladorSensores : MonoBehaviour
                             v*=180f / Mathf.PI;
                             
                             mutex.WaitOne();
-                            thread_save_dado = v;  
+                            thread_safe_dado = v;  
                             mutex.ReleaseMutex();
 
                             if(ultimoDispositivo!=id)
@@ -162,10 +162,10 @@ public class ControladorSensores : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        buscarDadosRunning = false;
-        if (buscarDadosThread != null && buscarDadosThread.IsAlive)
+        buscarDadosSerialRunning = false;
+        if (buscarDadosSerialThread != null && buscarDadosSerialThread.IsAlive)
         {
-            buscarDadosThread.Join();
+            buscarDadosSerialThread.Join();
         }
     }
 }
