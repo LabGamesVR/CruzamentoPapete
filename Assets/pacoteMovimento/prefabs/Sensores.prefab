@@ -2157,9 +2157,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eca96dcb50038ac77b2e2064c5f8740c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disponivel: 0
   dados: {x: 0, y: 0}
   mostrador: {fileID: 778222575270520431}
+  statusConexao: 2
 --- !u!114 &5620442804311215942
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2202,11 +2202,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 498685dc603239ba5b9da3cd7c528b6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topName: Cima
-  botName: Baixo
-  midName: Neutro
-  leftName: Esquerda
-  rightName: Direita
+  nomesPadrao:
+    topName: Cima
+    botName: Baixo
+    midName: Centro
+    leftName: Esquerda
+    rightName: Direita
+  dicionarioNomesPorDispositivo:
+  - dispositivo: papE
+    nomes:
+      topName: "Flex\xE3o"
+      botName: "Dorsiflex\xE3o"
+      midName: Repouso
+      leftName: "Evers\xE3o"
+      rightName: "Invers\xE3o"
+  - dispositivo: papD
+    nomes:
+      topName: "Flex\xE3o"
+      botName: "Dorsiflex\xE3o"
+      midName: Repouso
+      leftName: "Invers\xE3o"
+      rightName: "Evers\xE3o"
   sensor: {fileID: 0}
   pronto: 0
   minimoTempoEmPosicao: 0.5

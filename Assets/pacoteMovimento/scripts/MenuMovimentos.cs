@@ -32,6 +32,7 @@ public class MenuMovimentos : MonoBehaviour
     public string pastaRelatorios = "relatorios";
 
     private GerenciadorMovimentos mov2;
+    private string ultimoDispositivo = "";
 
     void Start()
     {
@@ -40,13 +41,6 @@ public class MenuMovimentos : MonoBehaviour
         pastaRelatorios = Application.persistentDataPath + "/" + pastaRelatorios;
 
         SetNomeRelatorio();
-
-        //atualiza labels
-        topBtn.GetComponentInChildren<TMP_Text>().text = mov2.topName;
-        botBtn.GetComponentInChildren<TMP_Text>().text = mov2.botName;
-        midBtn.GetComponentInChildren<TMP_Text>().text = mov2.midName;
-        leftBtn.GetComponentInChildren<TMP_Text>().text = mov2.leftName;
-        rightBtn.GetComponentInChildren<TMP_Text>().text = mov2.rightName;
 
         //atualiza acoes
         topBtn.onClick.AddListener(SetTop);
@@ -58,6 +52,17 @@ public class MenuMovimentos : MonoBehaviour
     }
 
     void Update(){
+        string dispositivo = mov2.sensor.ObterDispostivoAtual();
+        if(dispositivo!=ultimoDispositivo){
+            ultimoDispositivo = dispositivo;
+            //atualiza labels
+            topBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.top, dispositivo);
+            botBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.bot, dispositivo);
+            midBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.mid, dispositivo);
+            leftBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.left, dispositivo);
+            rightBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.right, dispositivo);
+        }
+
         if(mov2.pronto){
             SetPos(mov2.analise.progressoLateral, mov2.analise.progressoFrontal, dotContainer, dot);
             IndicadotEixoFrontal.SetActive(mov2.analise.ProbabilidadeEixoLateral < 0.5f);

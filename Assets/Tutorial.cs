@@ -9,8 +9,11 @@ public class Tutorial : MonoBehaviour
     public Texture[] spritesEvInv;
     public bool peEsq = false;
     private bool lastPeEsq = false;
+    private ControladorSensores sensor;
+    private string ultimoDispositivo;
     private void Start()
     {
+        sensor = FindObjectOfType<ControladorSensores>();
     }
     public void fechar()
     {
@@ -18,22 +21,18 @@ public class Tutorial : MonoBehaviour
     }
     private void Update()
     {
-        // if (papete==null)
-        // {
-        //     papete = FindObjectOfType<Jogador>().papete;
-        // }
-        // else
-        // {
-        //     peEsq = papete.EhPeEsq();
-        //     if (peEsq != lastPeEsq)
-        //     {
-        //         lastPeEsq = peEsq;
-        //         foreach(RawImage img in pes)
-        //             img.transform.localScale = new Vector3(peEsq ? -1f:1f, 1f, 1f) ;
-
-        //         pes[1].texture = spritesEvInv[peEsq?0:1];
-        //         pes[3].texture = spritesEvInv[peEsq?1:0];
-        //     }
-        // }
+        string dispositivo = sensor.ObterDispostivoAtual();
+        if(dispositivo != ultimoDispositivo)
+            switch (dispositivo)
+            {
+                case "papE":
+                    foreach(RawImage img in pes)    
+                        img.transform.localScale = new Vector3(-1f, 1f, 1f) ;
+                    break;
+                case "papD":
+                    foreach(RawImage img in pes)    
+                        img.transform.localScale = new Vector3(1f, 1f, 1f);
+                    break;
+            }
     }
 }

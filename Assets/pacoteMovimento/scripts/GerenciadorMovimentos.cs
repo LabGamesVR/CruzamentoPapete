@@ -11,11 +11,31 @@ public class GerenciadorMovimentos : MonoBehaviour
 {
     #region basico
 
-    public string topName = "Cima";
-    public string botName = "Baixo";
-    public string midName = "Neutro";
-    public string leftName = "Esquerda";
-    public string rightName = "Direita";
+[System.Serializable]
+    public struct Nomes
+    {
+        public string topName;
+        public string botName;
+        public string midName;
+        public string leftName;
+        public string rightName;
+        public Nomes(string topName = "Cima", string botName = "Baixo", string midName = "Neutro", string leftName = "Esquerda", string rightName = "Direita")
+        {
+            this.topName = topName;
+            this.botName = botName;
+            this.midName = midName;
+            this.leftName = leftName;
+            this.rightName = rightName;
+        }
+    }
+    [System.Serializable]
+    public struct ItemDicionarioNomesPorDispositivo{
+        public string dispositivo;
+        public Nomes nomes;
+    }
+
+    public Nomes nomesPadrao;
+    public ItemDicionarioNomesPorDispositivo[] dicionarioNomesPorDispositivo;
 
     Vector2 topRot, botRot, midRot, leftRot, rightRot;
     bool verticalAxis = true, horizontalAxis = true;
@@ -31,7 +51,7 @@ public class GerenciadorMovimentos : MonoBehaviour
 
     public bool CalibrarDir(Movimento2Eixos.Direcao dir)
     {
-        if (sensor.statusConexao!=StatusConexao.Desconectado && sensor.dados != Vector2.zero)
+        if (sensor.statusConexao != StatusConexao.Desconectado && sensor.dados != Vector2.zero)
         {
             switch (dir)
             {
@@ -123,7 +143,6 @@ public class GerenciadorMovimentos : MonoBehaviour
             if (movimentosASeremFeitos != null && movimentosASeremFeitos.Any())
             {
                 Movimento2Eixos.Direcao desejado = jaFoiParaONeutro ? movimentosASeremFeitos.Peek() : Movimento2Eixos.Direcao.mid;
-                // print("desejado: "+NomeMovimento(desejado));
                 Movimento2Eixos.Direcao atual = mov2.ObterDirecao(analise, true, desejado == Movimento2Eixos.Direcao.top || desejado == Movimento2Eixos.Direcao.bot);
 
                 if (desejado == Movimento2Eixos.Direcao.mid)
@@ -212,15 +231,28 @@ public class GerenciadorMovimentos : MonoBehaviour
         extremoAtingido = 0.5f;
     }
 
-    string NomeMovimento(Movimento2Eixos.Direcao mov)
+    public string NomeMovimento(Movimento2Eixos.Direcao mov, string dispositivo)
     {
+        foreach (ItemDicionarioNomesPorDispositivo item in dicionarioNomesPorDispositivo)
+        {
+            if(item.dispositivo == dispositivo){
+                return mov switch
+                {
+                    Movimento2Eixos.Direcao.top => item.nomes.topName,
+                    Movimento2Eixos.Direcao.bot => item.nomes.botName,
+                    Movimento2Eixos.Direcao.left => item.nomes.leftName,
+                    Movimento2Eixos.Direcao.right => item.nomes.rightName,
+                    _ => item.nomes.midName,
+                };
+            }
+        }
         return mov switch
         {
-            Movimento2Eixos.Direcao.top => topName,
-            Movimento2Eixos.Direcao.bot => botName,
-            Movimento2Eixos.Direcao.left => leftName,
-            Movimento2Eixos.Direcao.right => rightName,
-            _ => "mid",
+            Movimento2Eixos.Direcao.top => nomesPadrao.topName,
+            Movimento2Eixos.Direcao.bot => nomesPadrao.botName,
+            Movimento2Eixos.Direcao.left => nomesPadrao.leftName,
+            Movimento2Eixos.Direcao.right => nomesPadrao.rightName,
+            _ => nomesPadrao.midName,
         };
     }
 
@@ -236,11 +268,12 @@ public class GerenciadorMovimentos : MonoBehaviour
             if (!System.IO.File.Exists(ondeSalvar))
                 System.IO.File.WriteAllText(ondeSalvar, "Eixo de movimento;Movimento;Tempo para neutro;Tempo para completar;Angulo atingido");
 
-            string outTxt = System.DateTime.Now.ToString("\nyyyy-dd-MM:HH:mm;" + sensor.ObterDispostivoAtual());
+            string dispositivo = sensor.ObterDispostivoAtual();
+            string outTxt = System.DateTime.Now.ToString("\nyyyy-dd-MM:HH:mm;" + dispositivo);
             foreach (Registro item in Registros)
             {
                 outTxt += "\n" + (item.mov == Movimento2Eixos.Direcao.top || item.mov == Movimento2Eixos.Direcao.bot ? "Frontal" : "Lateral")
-                    + ";" + NomeMovimento(item.mov)
+                    + ";" + NomeMovimento(item.mov, dispositivo)
                     + ";" + item.tempoParaNeutro.ToString("0.00")
                     + ";" + item.tempo.ToString("0.00")
                     + ";" + mov2.ObterAngulo(item.mov, item.extremoAtingido).ToString("0.0") + "°"
