@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Linq;
 
-
 public class GerenciadorMovimentos : MonoBehaviour
 {
     #region basico
@@ -27,7 +26,7 @@ public class GerenciadorMovimentos : MonoBehaviour
     void Start()
     {
         sensor = FindAnyObjectByType<ControladorSensores>();
-        mov2 = new();       
+        mov2 = new();
     }
 
     public bool CalibrarDir(Movimento2Eixos.Direcao dir)
@@ -71,7 +70,8 @@ public class GerenciadorMovimentos : MonoBehaviour
         }
     }
 
-    public Movimento2Eixos.Thresholds GetThresholds(){
+    public Movimento2Eixos.Thresholds GetThresholds()
+    {
         return mov2.GetThresholds();
     }
 
@@ -111,13 +111,14 @@ public class GerenciadorMovimentos : MonoBehaviour
     float TempoParaNeutro;
     List<Registro> Registros = new();
 
-    public float deb;
+    FixedQueue<float> ultimasLeituras = new(5);
+
     void Update()
     {
         if (pronto)
-        {   
+        {
             Vector2 currentRot = FindObjectOfType<ControladorSensores>().dados;
-            analise = mov2.GetEvaluation(currentRot);         
+            analise = mov2.GetEvaluation(currentRot);
             // se tem movimentos na lista
             if (movimentosASeremFeitos != null && movimentosASeremFeitos.Any())
             {
@@ -125,13 +126,22 @@ public class GerenciadorMovimentos : MonoBehaviour
                 // print("desejado: "+NomeMovimento(desejado));
                 Movimento2Eixos.Direcao atual = mov2.ObterDirecao(analise, true, desejado == Movimento2Eixos.Direcao.top || desejado == Movimento2Eixos.Direcao.bot);
 
+                if (desejado == Movimento2Eixos.Direcao.mid)
+                    ultimasLeituras.Clear();
+                else
+                {
+                    ultimasLeituras.Enqueue(desejado == Movimento2Eixos.Direcao.top || desejado == Movimento2Eixos.Direcao.bot ? analise.progressoFrontal : analise.progressoLateral);
 
-                extremoAtingido =
-                    desejado == Movimento2Eixos.Direcao.top ? Mathf.Max(extremoAtingido, analise.progressoFrontal) :
-                    desejado == Movimento2Eixos.Direcao.bot ? Mathf.Min(extremoAtingido, analise.progressoFrontal) :
-                    desejado == Movimento2Eixos.Direcao.left ? Mathf.Min(extremoAtingido, analise.progressoLateral) :
-                    desejado == Movimento2Eixos.Direcao.right ? Mathf.Max(extremoAtingido, analise.progressoLateral) :
-                    0.5f;
+                    float leituraDeExtremo =
+                        desejado == Movimento2Eixos.Direcao.top ? Mathf.Max(extremoAtingido, analise.progressoFrontal) :
+                        desejado == Movimento2Eixos.Direcao.bot ? Mathf.Min(extremoAtingido, analise.progressoFrontal) :
+                        desejado == Movimento2Eixos.Direcao.left ? Mathf.Min(extremoAtingido, analise.progressoLateral) :
+                        desejado == Movimento2Eixos.Direcao.right ? Mathf.Max(extremoAtingido, analise.progressoLateral) :
+                        0.5f;
+
+                    if (Mathf.Abs(leituraDeExtremo - ultimasLeituras.Average()) < 0.1f)
+                        extremoAtingido = leituraDeExtremo;
+                }
 
                 if (desejado == atual)
                 {
@@ -181,7 +191,7 @@ public class GerenciadorMovimentos : MonoBehaviour
                     }
                 }
             }
-        }        
+        }
     }
     public void SetSaveLocation(string local)
     {
@@ -240,7 +250,8 @@ public class GerenciadorMovimentos : MonoBehaviour
             System.IO.File.AppendAllText(ondeSalvar, outTxt);
         }
     }
-    public Movimento2Eixos.Direcao ObterDirecao(){
+    public Movimento2Eixos.Direcao ObterDirecao()
+    {
         return mov2.ObterDirecao(analise);
     }
 }
