@@ -1,5 +1,6 @@
 public enum StatusConexao 
 {
-    Conectado,
+    Serial,
+    WiFi,
     Desconectado    
 }

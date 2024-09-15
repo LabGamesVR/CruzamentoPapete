@@ -2210,7 +2210,6 @@ MonoBehaviour:
   sensor: {fileID: 0}
   pronto: 0
   minimoTempoEmPosicao: 0.5
-  deb: 0
 --- !u!1 &6603439320505368306
 GameObject:
   m_ObjectHideFlags: 0
@@ -2557,6 +2556,7 @@ MonoBehaviour:
   rotationSpeed: 90
   imageProcura: {fileID: 21300000, guid: 6d6eff58aefb2e9b48991b6b94a0524f, type: 3}
   imageConectadoSerial: {fileID: 21300000, guid: ec0d8658532a978109cae9b3e028ca09, type: 3}
+  imageConectadoWifi: {fileID: 21300000, guid: 5b948d19c4bf96c35831be43b5639209, type: 3}
 --- !u!114 &5901260862976200184
 MonoBehaviour:
   m_ObjectHideFlags: 0

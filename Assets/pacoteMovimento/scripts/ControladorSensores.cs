@@ -3,10 +3,12 @@ using System;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 public class ControladorSensores : MonoBehaviour
 {
-    public bool disponivel;
     public Vector2 dados;
     private Vector2 thread_safe_dado;
     Mutex mutex = new Mutex();
@@ -15,33 +17,75 @@ public class ControladorSensores : MonoBehaviour
     private Thread buscarDadosSerialThread;
     private bool buscarDadosSerialRunning = true;
 
+    private UdpClient client;
+    private Thread netThread;
+    private bool isListening = false;
+    private int port = 5555;
+
     private StatusConexao novoStatus = StatusConexao.Desconectado;
-    private StatusConexao statusConexao = StatusConexao.Desconectado;
+    public StatusConexao statusConexao = StatusConexao.Desconectado;
 
     void Start()
     {
-        if(FindObjectsOfType<ControladorSensores>().Length>1)
+        if (FindObjectsOfType<ControladorSensores>().Length > 1)
             Destroy(gameObject);
-        else{
+        else
+        {
             DontDestroyOnLoad(gameObject);
             buscarDadosSerialThread = new Thread(BuscarDadosPorta);
             buscarDadosSerialThread.Start();
+
+            netThread = new Thread(new ThreadStart(PortListener));
+            netThread.IsBackground = true;
+            netThread.Start();
         }
     }
 
-    void Update(){
-        if(mostrador && novoStatus!=statusConexao){
+    void Update()
+    {
+        if (mostrador && novoStatus != statusConexao)
+        {
             statusConexao = novoStatus;
             mostrador.Mostrar(statusConexao);
         }
-            mutex.WaitOne();
-            dados = thread_safe_dado;  
-            mutex.ReleaseMutex();
+        mutex.WaitOne();
+        dados = thread_safe_dado;
+        mutex.ReleaseMutex();
     }
     private static bool IsValidArduinoResponse(string response)
     {
         string pattern = @".*-?\d+\.\d+\t-?\d+\.\d+.*";
         return new Regex(pattern).IsMatch(response);
+    }
+
+    bool InterpretarMensagem(string mensagem)
+    {
+        if (IsValidArduinoResponse(mensagem))
+        {
+            string[] f_reps = mensagem.Split('\t');
+            string id = f_reps[0];
+            try
+            {
+                Vector2 v = new Vector2(
+                    float.Parse(f_reps[1]),
+                    float.Parse(f_reps[2])
+                );
+                // A leitura é feita em radianos pelo sensor.
+                // Como em Unity por padrão trabalhamos com graus,
+                // aqui fazemos a conversão
+                v *= 180f / Mathf.PI;
+
+                mutex.WaitOne();
+                thread_safe_dado = v;
+                mutex.ReleaseMutex();
+
+                if (ultimoDispositivo != id)
+                    ultimoDispositivo = id;
+                return true;
+            }
+            catch (Exception) { }
+        }
+        return false;
     }
 
     private SerialPort BuscarArduino()
@@ -97,15 +141,13 @@ public class ControladorSensores : MonoBehaviour
         {
             if (serialPort == null)
             {
-                if (mostrador != null)
+                if (mostrador != null &&  statusConexao == StatusConexao.Serial)
                     novoStatus = StatusConexao.Desconectado;
-                disponivel = false;
 
                 serialPort = BuscarArduino();
 
                 if (mostrador != null)
-                    novoStatus = StatusConexao.Conectado;
-                disponivel = true;
+                    novoStatus = StatusConexao.Serial;
             }
             else
             {
@@ -116,39 +158,14 @@ public class ControladorSensores : MonoBehaviour
                     if (response == "")
                     {
                         serialPort = null;
-                        disponivel = false;
                     }
 
-                    if (IsValidArduinoResponse(response))
-                    {
-                        string[] f_reps = response.Split('\t');
-                        string id = f_reps[0];
-                        try
-                        {
-                            Vector2 v = new Vector2(
-                                float.Parse(f_reps[1]),
-                                float.Parse(f_reps[2])
-                            );
-                            // A leitura é feita em radianos pelo sensor.
-                            // Como em Unity por padrão trabalhamos com graus,
-                            // aqui fazemos a conversão
-                            v*=180f / Mathf.PI;
-                            
-                            mutex.WaitOne();
-                            thread_safe_dado = v;  
-                            mutex.ReleaseMutex();
-
-                            if(ultimoDispositivo!=id)
-                                ultimoDispositivo=id;
-                        }
-                        catch (Exception) { }
-                    }
+                    InterpretarMensagem(response);
                 }
                 catch (Exception)
                 {
                     // Debug.Log("ERRO: " + e);
                     serialPort = null;
-                    disponivel = false;
                 }
             }
 
@@ -156,12 +173,52 @@ public class ControladorSensores : MonoBehaviour
         }
     }
 
-    public string ObterDispostivoAtual(){
+    void PortListener()
+    {
+        try
+        {
+            client = new UdpClient(port);
+            client.Client.ReceiveTimeout = 500;
+            isListening = true;
+            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, port);
+
+            while (isListening)
+            {
+                if (statusConexao == StatusConexao.Desconectado || statusConexao == StatusConexao.WiFi)
+                {
+                    try
+                    {
+                        byte[] receivedBytes = client.Receive(ref remoteEndPoint);
+
+                        // Convert byte data to string and log the message
+                        string receivedMessage = Encoding.ASCII.GetString(receivedBytes);
+                        if (InterpretarMensagem(receivedMessage) && statusConexao == StatusConexao.Desconectado)
+                            novoStatus = StatusConexao.WiFi;
+                    }
+                    catch (SocketException e)
+                    {
+                        if (e.SocketErrorCode == SocketError.TimedOut && statusConexao == StatusConexao.WiFi)
+                            novoStatus = StatusConexao.Desconectado;
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error: {e.Message}");
+        }
+    }
+    public string ObterDispostivoAtual()
+    {
         return ultimoDispositivo;
     }
 
     private void OnApplicationQuit()
     {
+        isListening = false;
+        client?.Close();
+        netThread?.Abort();
+
         buscarDadosSerialRunning = false;
         if (buscarDadosSerialThread != null && buscarDadosSerialThread.IsAlive)
         {

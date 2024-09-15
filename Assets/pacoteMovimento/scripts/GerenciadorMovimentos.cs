@@ -31,7 +31,7 @@ public class GerenciadorMovimentos : MonoBehaviour
 
     public bool CalibrarDir(Movimento2Eixos.Direcao dir)
     {
-        if (sensor.disponivel && sensor.dados != Vector2.zero)
+        if (sensor.statusConexao!=StatusConexao.Desconectado && sensor.dados != Vector2.zero)
         {
             switch (dir)
             {

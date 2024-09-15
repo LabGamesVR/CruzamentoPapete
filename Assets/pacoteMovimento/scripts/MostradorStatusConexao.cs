@@ -9,6 +9,7 @@ public class MostradorStatusConexao : MonoBehaviour
     public float rotationSpeed = 90f;
     public Sprite imageProcura;
     public Sprite imageConectadoSerial;
+    public Sprite imageConectadoWifi;
     private UnityEngine.UI.Image img;
     private bool rotating = true;
     void Start()
@@ -26,11 +27,15 @@ public class MostradorStatusConexao : MonoBehaviour
 
     public void Mostrar(StatusConexao status)
     {
-        print(status);
         switch (status)
         {
-            case StatusConexao.Conectado:
+            case StatusConexao.Serial:
                 img.sprite = imageConectadoSerial;
+                rotating = false;
+                transform.rotation = Quaternion.identity;
+                break;
+            case StatusConexao.WiFi:
+                img.sprite = imageConectadoWifi;
                 rotating = false;
                 transform.rotation = Quaternion.identity;
                 break;
