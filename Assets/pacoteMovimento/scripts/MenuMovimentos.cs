@@ -51,9 +51,11 @@ public class MenuMovimentos : MonoBehaviour
         rightBtn.onClick.AddListener(SetRight);
     }
 
-    void Update(){
+    void Update()
+    {
         string dispositivo = mov2.sensor.ObterDispostivoAtual();
-        if(dispositivo!=ultimoDispositivo){
+        if (dispositivo != ultimoDispositivo)
+        {
             ultimoDispositivo = dispositivo;
             //atualiza labels
             topBtn.GetComponentInChildren<TMP_Text>().text = mov2.NomeMovimento(Movimento2Eixos.Direcao.top, dispositivo);
@@ -64,7 +66,8 @@ public class MenuMovimentos : MonoBehaviour
             AtualizarTutorial();
         }
 
-        if(mov2.pronto){
+        if (mov2.pronto)
+        {
             SetPos(mov2.analise.progressoLateral, mov2.analise.progressoFrontal, dotContainer, dot);
             IndicadotEixoFrontal.SetActive(mov2.analise.ProbabilidadeEixoLateral < 0.5f);
             IndicadotEixoLateral.SetActive(mov2.analise.ProbabilidadeEixoLateral > 0.5f);
@@ -142,24 +145,25 @@ public class MenuMovimentos : MonoBehaviour
     }
     public void AbrirPastaRelatorios()
     {
-        print(pastaRelatorios);
-        System.IO.Directory.CreateDirectory(pastaRelatorios);
-        print(Application.platform);
         // Detect the current platform
         switch (Application.platform)
         {
             case RuntimePlatform.WindowsPlayer:
             case RuntimePlatform.WindowsEditor:
-                Process.Start("explorer.exe", pastaRelatorios);
+                string pastaWin = pastaRelatorios.Replace('/', '\\');
+                System.IO.Directory.CreateDirectory(pastaWin);
+                Process.Start("explorer.exe", pastaWin);
                 break;
 
             case RuntimePlatform.OSXPlayer:
             case RuntimePlatform.OSXEditor:
+                System.IO.Directory.CreateDirectory(pastaRelatorios);
                 Process.Start("open", pastaRelatorios);
                 break;
 
             case RuntimePlatform.LinuxPlayer:
             case RuntimePlatform.LinuxEditor:
+                System.IO.Directory.CreateDirectory(pastaRelatorios);
                 Process.Start("xdg-open", pastaRelatorios);
                 break;
 
@@ -168,15 +172,17 @@ public class MenuMovimentos : MonoBehaviour
         }
     }
 
-    public void AtualizarTutorial(){
-        
+    public void AtualizarTutorial()
+    {
+
         topBtn.transform.GetChild(1).gameObject.SetActive(false);
         botBtn.transform.GetChild(1).gameObject.SetActive(false);
         leftBtn.transform.GetChild(1).gameObject.SetActive(false);
         rightBtn.transform.GetChild(1).gameObject.SetActive(false);
         midBtn.transform.GetChild(1).gameObject.SetActive(false);
 
-        if(toggleElementTutorial.isOn){
+        if (toggleElementTutorial.isOn)
+        {
 
             string path = $"pacoteMovimento/tutorial/{ultimoDispositivo}";
 
@@ -187,7 +193,8 @@ public class MenuMovimentos : MonoBehaviour
             {
                 print("No tutorial available");
             }
-            else{
+            else
+            {
                 foreach (var asset in loadedAssets)
                 {
                     if (asset is Sprite sprite)
