@@ -11,3 +11,13 @@ Jogo para mostrar a capacidade de detectar as 5 posições da papete inteligente
 ### Versão Unity
 
 2022.3.33
+
+
+## Checksum
+Calculado ao clonar o repositorio e executar 
+```
+sha256sum <(find . -type f -exec sha256sum {} \; | sort)
+```
+no linux:
+ 
+ a146655a9472756ca416d345b7b48c0dbe81c661bb51666e9fd38fb9a3c5a6eb
